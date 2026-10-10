@@ -8,10 +8,11 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Literal
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, File, UploadFile, Request, Response
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-from . import catalog, db, tickets, kb, embeddings, admin_auth
+from . import catalog, db, tickets, kb, embeddings, admin_auth, tenant_api, observability
+from .tenant_backend import store as tenant_store
 from .langflow import AgentError, ask_agent
 from .settings import agent_mode
 
@@ -25,11 +26,43 @@ async def lifespan(_: FastAPI):
     tickets.init_ticket_schema()
     kb.initialize()
     admin_auth.initialize()
+    tenant_store.migrate()  # PostgreSQL verifies Alembic schema; never auto-runs DDL
     yield
 
 
 app = FastAPI(title="SmartBiz AI MVP", version="0.1.0", lifespan=lifespan)
+app.middleware("http")(observability.access_middleware)
+app.get("/internal/metrics", include_in_schema=False)(observability.serve_metrics)
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
+app.include_router(tenant_api.router)
+
+
+def multi_tenant_mode() -> bool:
+    return os.getenv('SMARTBIZ_MULTI_TENANT', 'false').lower() in ('1','true','yes')
+
+
+@app.middleware('http')
+async def reject_legacy_api_in_tenant_mode(request: Request, call_next):
+    """Fail closed: v1 shared-key endpoints are not tenant-aware.
+
+    In tenant mode, no accidental bypass through old /api/kb/* or /api/admin/*.
+    Existing legacy database rows remain intact but inaccessible from HTTP.
+    """
+    path = request.url.path
+    if multi_tenant_mode():
+        if path.startswith('/api/') and not (path.startswith('/api/v2/') or path == '/api/catalog/search'):
+            return JSONResponse({'detail':'多租户模式已停用旧版业务 API'},status_code=410)
+        if path == '/admin':
+            return JSONResponse({'detail':'请改用 /workspace（旧后台已停用）'},status_code=410)
+    else:
+        if path.startswith('/api/v2/'):
+            return JSONResponse({'detail':'多租户模式尚未启用'},status_code=503)
+    response = await call_next(request)
+    if path in ('/workspace','/static/workspace.js','/static/workspace.html') or path.startswith('/api/v2/'):
+        response.headers['Cache-Control'] = 'no-store, private, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+    return response
+
 
 
 class ChatIn(BaseModel):
@@ -341,8 +374,17 @@ def admin_home():
     return FileResponse(WEB_DIR / "admin.html")
 
 
+@app.get("/workspace", include_in_schema=False)
+def workspace():
+    if not multi_tenant_mode():
+        raise HTTPException(503, '请先设置 SMARTBIZ_MULTI_TENANT=true')
+    return FileResponse(WEB_DIR / 'workspace.html')
+
+
 @app.get("/", include_in_schema=False)
 def home():
+    if multi_tenant_mode():
+        return RedirectResponse('/workspace')
     return FileResponse(WEB_DIR / "index.html")
 
 

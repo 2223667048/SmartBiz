@@ -98,7 +98,7 @@ async def embed_many(texts: list[str]) -> list[list[float]]:
         async with httpx.AsyncClient(timeout=httpx.Timeout(45, connect=10)) as client:
             for i in range(0, len(texts), 16):
                 batch = texts[i:i + 16]
-                payload = {"model": model, "input": batch, "dimensions": 2}
+                payload = {"model": model, "input": batch}
                 if dims is not None:
                     payload["dimensions"] = dims
                 response = await client.post(

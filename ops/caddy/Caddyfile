@@ -1,0 +1,26 @@
+{$SMARTBIZ_DOMAIN} {
+    encode zstd gzip
+    @private path /internal/*
+    respond @private 404
+    @oversize {
+        path /api/v2/documents
+        method POST
+    }
+    request_body @oversize {
+        max_size 3MB
+    }
+    header {
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        X-Frame-Options "DENY"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        Content-Security-Policy "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'"
+        Strict-Transport-Security "max-age=31536000"
+        -Server
+    }
+    reverse_proxy smartbiz:8000 {
+        health_uri /health
+        health_interval 20s
+        health_timeout 4s
+    }
+}

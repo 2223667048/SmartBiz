@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SmartBiz 企业工作台</title><link rel="stylesheet" href="/static/workspace.css"></head>
+<body><main><header><h1>SmartBiz 企业工作台</h1><span id="identity">未登录</span></header>
+<section id="login-section" class="card"><h2>企业账号登录</h2><form id="login-form"><label>邮箱<input id="email" type="email" autocomplete="username" required></label><label>密码<input id="password" type="password" autocomplete="current-password" required></label><button>登录</button></form><p id="login-status" role="status"></p></section>
+<section id="workspace" hidden>
+<div class="toolbar"><button id="refresh">刷新列表</button><button id="logout">退出登录</button></div>
+<div class="grid"><section class="card" id="admin-panel" hidden><h2>上传企业文档（管理员）</h2><form id="upload-form"><input type="file" id="file" accept=".md,.txt,.pdf,.docx" required><label>文档可见范围<select id="visibility"><option value="organization">企业成员可见</option><option value="admin">仅企业管理员</option></select></label><button>入队索引</button></form><p id="upload-status" role="status"></p><p class="small">HTTP 202 表示排队成功，不是已完成向量索引。</p></section>
+<section class="card"><h2>企业文档</h2><div id="documents" class="stack"></div></section></div>
+<section class="card"><h2>索引任务</h2><p class="small">状态：queued → running → succeeded / failed。失败后管理员可重试。</p><div id="job-metrics" role="status" class="small"></div><div id="jobs" class="stack"></div></section>
+<section class="card"><h2>知识检索与问答</h2><form id="ask-form"><textarea id="question" rows="3" maxlength="1000" placeholder="询问当前企业上传的知识资料" required></textarea><button>检索并回答</button></form><p id="ask-status" role="status"></p><pre id="answer"></pre><h3>资料来源</h3><div id="sources" class="stack"></div></section>
+<section id="audit-card" class="card" hidden><h2>最近 24 小时操作审计</h2><button type="button" id="audit-refresh">读取审计统计</button><div id="audit-summary" class="stack"></div></section>
+<section id="users-card" class="card" hidden><h2>企业用户（管理员）</h2><p class="small">停用账号会立即撤销其全部登录令牌，无法停用自己。</p><div id="users" class="stack"></div><form id="user-form"><label>用户邮箱<input id="user-email" type="email" required></label><label>初始密码（至少 12 位）<input id="user-password" type="password" minlength="12" required></label><label>角色<select id="user-role"><option value="member">成员</option><option value="admin">管理员</option></select></label><button>创建用户</button></form><p id="users-status" role="status"></p></section>
+</section></main><script src="/static/workspace.js" defer></script></body></html>

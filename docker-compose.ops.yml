@@ -1,0 +1,69 @@
+# Optional Lesson 9 observability and TLS. Use *after* docker-compose.pg.yml.
+# TLS: no public IP/domain required for localhost demo (local CA warning expected).
+services:
+  smartbiz:
+    environment:
+      SMARTBIZ_METRICS_TOKEN: ${SMARTBIZ_METRICS_TOKEN:?Missing .env.ops token}
+      SMARTBIZ_DAILY_ESTIMATE_USD: ${SMARTBIZ_DAILY_ESTIMATE_USD:-2.00}
+      SMARTBIZ_RESERVE_PER_CALL_USD: ${SMARTBIZ_RESERVE_PER_CALL_USD:-0.02}
+  caddy:
+    image: caddy:2.11
+    environment:
+      SMARTBIZ_DOMAIN: ${SMARTBIZ_DOMAIN:?Set SMARTBIZ_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./ops/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - smartbiz-caddy-data:/data
+      - smartbiz-caddy-config:/config
+    depends_on:
+      - smartbiz
+    restart: unless-stopped
+  prometheus:
+    ports:
+      - "127.0.0.1:9090:9090"
+    image: prom/prometheus:v3.6.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./ops/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./ops/prometheus/rules.yml:/etc/prometheus/rules.yml:ro
+      - ./ops/secrets/metrics_token:/etc/prometheus/metrics_token:ro
+      - smartbiz-prometheus-data:/prometheus
+    depends_on:
+      - smartbiz
+      - ops-exporter
+    restart: unless-stopped
+  ops-exporter:
+    build: .
+    command: ["python", "-m", "app.ops_exporter"]
+    environment:
+      PG_WORKER_DSN: postgresql://smartbiz_worker:${PG_WORKER_PASSWORD}@postgres:5432/smartbiz
+      SMARTBIZ_DAILY_ESTIMATE_USD: ${SMARTBIZ_DAILY_ESTIMATE_USD:-2.00}
+      SMARTBIZ_RESERVE_PER_CALL_USD: ${SMARTBIZ_RESERVE_PER_CALL_USD:-0.02}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  alertmanager:
+    ports:
+      - "127.0.0.1:9093:9093"
+    image: prom/alertmanager:v0.28.1
+    command: ["--config.file=/etc/alertmanager/alertmanager.yml"]
+    volumes:
+      - ./ops/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    depends_on:
+      - alert-sink
+    restart: unless-stopped
+  alert-sink:
+    build: .
+    command: ["python", "-m", "app.alert_sink"]
+    restart: unless-stopped
+volumes:
+  smartbiz-caddy-data:
+  smartbiz-caddy-config:
+  smartbiz-prometheus-data:

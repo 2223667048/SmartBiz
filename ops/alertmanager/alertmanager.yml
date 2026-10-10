@@ -1,0 +1,11 @@
+route:
+  receiver: smartbiz-local-log
+  group_by: [alertname]
+  group_wait: 10s
+  group_interval: 1m
+  repeat_interval: 1h
+receivers:
+  - name: smartbiz-local-log
+    webhook_configs:
+      - url: http://alert-sink:9099/alerts
+        send_resolved: true

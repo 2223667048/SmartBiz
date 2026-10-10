@@ -7,11 +7,22 @@ services:
     env_file: .env
     environment:
       SMARTBIZ_DB_PATH: /data/smartbiz.sqlite3
+      SMARTBIZ_UPLOAD_DIR: /data/tenant-uploads
       LANGFLOW_URL: http://langflow:7860
     volumes:
       - smartbiz-data:/data
     depends_on:
       - langflow
+  worker:
+    build: .
+    command: ["python", "-m", "app.tenant_worker"]
+    env_file: .env
+    environment:
+      SMARTBIZ_DB_PATH: /data/smartbiz.sqlite3
+      SMARTBIZ_UPLOAD_DIR: /data/tenant-uploads
+    volumes:
+      - smartbiz-data:/data
+    restart: unless-stopped
   langflow:
     image: langflowai/langflow:latest
     ports:

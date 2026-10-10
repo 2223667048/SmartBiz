@@ -1,0 +1,28 @@
+groups:
+  - name: smartbiz-alerts
+    rules:
+      - alert: SmartBizServiceUnavailable
+        expr: up{job=~"smartbiz-web|smartbiz-operations"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "SmartBiz target unavailable"}
+      - alert: SmartBizHigh5xxRate
+        expr: sum(rate(smartbiz_http_requests_total{status=~"5.."}[5m])) > 0.05
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "High server error rate"}
+      - alert: SmartBizIndexQueueBacklog
+        expr: smartbiz_queue_oldest_age_seconds > 600
+        for: 5m
+        labels: {severity: warning}
+        annotations: {summary: "Indexing queue delayed"}
+      - alert: SmartBizWorkerStale
+        expr: smartbiz_worker_last_seen_age_seconds > 120
+        for: 2m
+        labels: {severity: critical}
+        annotations: {summary: "Worker heartbeat stale"}
+      - alert: SmartBizEstimatedModelBudgetHigh
+        expr: smartbiz_model_budget_max_reserved_ratio > 0.8
+        for: 1m
+        labels: {severity: warning}
+        annotations: {summary: "Estimated model reservation exceeds 80% of daily budget"}

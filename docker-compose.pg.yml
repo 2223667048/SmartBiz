@@ -1,0 +1,60 @@
+# Opt-in PostgreSQL tenant backend. Use together with docker-compose.yml.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: smartbiz_owner
+      POSTGRES_DB: smartbiz
+      POSTGRES_PASSWORD: ${PG_OWNER_PASSWORD:?Set PG_OWNER_PASSWORD}
+      PG_APP_PASSWORD: ${PG_APP_PASSWORD:?Set PG_APP_PASSWORD}
+      PG_WORKER_PASSWORD: ${PG_WORKER_PASSWORD:?Set PG_WORKER_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartbiz_owner -d smartbiz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - smartbiz-pgdata:/var/lib/postgresql/data
+      - ./docker/postgres-init/01-roles.sh:/docker-entrypoint-initdb.d/01-roles.sh:ro
+    restart: unless-stopped
+  migrate:
+    build: .
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      PG_MIGRATION_DSN: postgresql+psycopg://smartbiz_owner:${PG_OWNER_PASSWORD}@postgres:5432/smartbiz
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+  smartbiz:
+    environment:
+      SMARTBIZ_MULTI_TENANT: "true"
+      SMARTBIZ_TENANT_BACKEND: postgres
+      PG_APP_DSN: postgresql://smartbiz_app:${PG_APP_PASSWORD}@postgres:5432/smartbiz
+    depends_on:
+      langflow:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+  worker:
+    environment:
+      SMARTBIZ_TENANT_BACKEND: postgres
+      PG_WORKER_DSN: postgresql://smartbiz_worker:${PG_WORKER_PASSWORD}@postgres:5432/smartbiz
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+  pgtest:
+    profiles: ["pgtest"]
+    build: .
+    command: ["python", "-m", "pytest", "-q", "tests/test_lesson07_pg_live.py", "tests/test_lesson08_pg_live.py", "tests/test_lesson09_pg_live.py"]
+    environment:
+      RUN_PG_LIVE_TESTS: "1"
+      PG_APP_DSN: postgresql://smartbiz_app:${PG_APP_PASSWORD}@postgres:5432/smartbiz
+      PG_WORKER_DSN: postgresql://smartbiz_worker:${PG_WORKER_PASSWORD}@postgres:5432/smartbiz
+    volumes:
+      - ./tests:/srv/app/tests:ro
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+volumes:
+  smartbiz-pgdata:

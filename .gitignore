@@ -1,9 +1,41 @@
+# Local environment and secrets
 .env
+.env.*
+.env.pg
+.env.ops
+!.env.example
+!.env.*.example
+
+# Python environments, caches, and coverage
 .venv/
+.venv-*/
+venv/
 __pycache__/
 .pytest_cache/
-*.pyc
-*.zip
+*.py[cod]
+.coverage
+.coverage.*
+htmlcov/
+
+# IDE metadata
+.idea/
+
+# Runtime data and generated logs
 data/
 langflow-data/
 *.sqlite3
+*.log
+
+# Backups and database exports
+*.zip
+*.sql.dump
+*.dump
+
+# Browser-test dependencies and reports
+node_modules/
+playwright-report/
+test-results/
+
+# Runtime-only operations secrets
+ops/secrets/*
+!ops/secrets/.gitkeep

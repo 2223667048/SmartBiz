@@ -1,4 +1,4 @@
-# 智企 AI · SmartBiz Agent 教学 MVP
+# 智企 AI · SmartBiz Agent MVP
 
 基于 [Langflow](https://github.com/langflow-ai/langflow) 的**独立业务项目**。Langflow 是 MIT 开源软件；本仓库里的业务层示例可自主修改。使用原项目时仍需保留适用的 MIT 许可和版权声明。
 
@@ -94,9 +94,6 @@ docs/              学习路线、源码地图、RAG、商业上线清单
 - 登录失败：检查 `LANGFLOW_SUPERUSER_PASSWORD` 是否强密码，且根据所用镜像配置对应用户名。
 - 浏览器聊天 401：当前会话失效，新建会话。
 - Docker 镜像下载失败：网络/镜像仓库问题，先单独运行 `docker pull langflowai/langflow:latest` 验证。
-
-## 学习文档
-请依序阅读：`docs/00-路线图.md`、`docs/01-源码导读.md`、`docs/02-Langflow配置.md`、`docs/03-商业上线清单.md`、`docs/04-业务模块拆解.md`。
 
 官方来源：
 - Langflow GitHub https://github.com/langflow-ai/langflow
