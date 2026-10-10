@@ -1,0 +1,1 @@
+"""SmartBiz AI MVP application."""

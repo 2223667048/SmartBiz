@@ -1,0 +1,18 @@
+:root{font-family:system-ui,-apple-system,"Segoe UI","PingFang SC",sans-serif;color:#152334;background:#f1f5f9}
+*{box-sizing:border-box}body{margin:0}.layout{max-width:930px;margin:35px auto;padding:0 18px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+h1{font-size:28px;margin:2px 0 8px}.eyebrow{font-size:11px;letter-spacing:2px;color:#536e89}
+.subtitle{color:#607188;font-size:14px;margin:0 0 15px}h2{font-size:18px;margin:0 0 8px}
+.chat,.lead{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 8px 26px #0f172a0a;margin-bottom:18px;padding:20px}
+.conversation{height:320px;overflow:auto;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:5px 3px 15px}
+.bubble{max-width:86%;border-radius:12px;padding:11px 14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.bot{background:#f0f5fc}.user{background:#e5f8ed;align-self:flex-end}.input-row{display:flex;gap:10px}
+input,textarea{font:inherit;border:1px solid #cbd5e1;border-radius:9px;padding:11px;min-width:0;width:100%;background:white}
+textarea{min-height:92px;resize:vertical}button{font:inherit;border:0;background:#1d4ed8;color:white;border-radius:9px;padding:10px 16px;cursor:pointer;white-space:nowrap}
+button:hover{filter:brightness(.95)}button:disabled{opacity:.5;cursor:wait}button.muted{background:#e5eaf2;color:#234}
+.status,#lead-status{min-height:20px;font-size:13px;color:#475569}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:14px;font-weight:550;margin:10px 0}label input,label textarea{display:block;margin-top:6px}
+label.consent{font-weight:400;font-size:13px;color:#556273;display:flex;gap:8px;align-items:start}
+label.consent input{width:auto;margin:3px 0}.feedback{display:flex;gap:8px;margin-top:5px}.feedback button{background:#e5eaf2;color:#234;font-size:12px;padding:6px 10px}
+footer{text-align:center;font-size:12px;color:#64748b;margin-bottom:25px}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+@media(max-width:630px){.two{grid-template-columns:1fr}h1{font-size:22px}.layout{margin:18px auto}.conversation{height:390px}header{align-items:flex-start}}

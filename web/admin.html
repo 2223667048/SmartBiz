@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartBiz · 知识库管理后台</title>
+  <link rel="stylesheet" href="/static/admin.css">
+  <script src="/static/admin.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">S</span>
+      <div><strong>SmartBiz</strong><small>Knowledge Studio / 教学版</small></div></div>
+    <nav><a href="/">返回客服</a><a href="/docs" target="_blank" rel="noopener">API 文档</a><button type="button" id="logout" class="ghost hidden">退出登录</button></nav>
+  </header>
+  <main class="shell">
+    <section id="login-panel" class="login-card">
+      <span class="eyebrow">SECURE ACCESS</span><h1>知识库管理后台</h1>
+      <p>使用 <code>ADMIN_API_KEY</code> 登录，系统将创建 8 小时的 HttpOnly 管理会话。仅供本机教学，不代表企业级账号体系。</p>
+      <form id="login-form">
+        <label for="password">管理员密钥</label>
+        <input id="password" type="password" autocomplete="off" required maxlength="512" placeholder="输入 .env 中的 ADMIN_API_KEY">
+        <button type="submit">登录工作台 <span aria-hidden="true">→</span></button>
+      </form>
+      <p id="login-status" class="status" role="status"></p>
+    </section>
+
+    <section id="dashboard" class="hidden" aria-label="知识库管理工作台">
+      <div class="hero"><div><span class="eyebrow">KNOWLEDGE OPERATIONS</span><h1>企业知识库</h1><p>管理文档索引，验证检索质量，并检查 AI 回答的来源证据。</p></div><div class="hero-tag">Local MVP · v0.5</div></div>
+      <div class="metrics" aria-label="索引统计">
+        <div class="metric"><span>文档总数</span><strong id="doc-count">—</strong></div>
+        <div class="metric"><span>文本块总数</span><strong id="chunk-count">—</strong></div>
+        <div class="metric"><span>索引状态</span><strong id="index-state">检查中</strong></div>
+      </div>
+      <div class="grid">
+        <div class="column">
+          <section class="panel"><div class="panel-head"><div><small>01 / DOCUMENT INGESTION</small><h2>上传资料</h2></div></div>
+            <p class="hint">支持 PDF、DOCX、TXT、MD；文件不超过 2 MiB。上传完成 ≠ 向量化完成。</p>
+            <form id="upload-form"><label class="drop" for="doc-file"><span class="drop-icon">↑</span><strong>选择一份文档</strong><span id="selected-file">从电脑选取文件</span></label>
+              <input id="doc-file" class="visually-hidden" type="file" accept=".pdf,.docx,.txt,.md" required>
+              <div class="progress-track" role="progressbar" aria-label="上传传输进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="upload-bar"></div></div>
+              <button id="upload-button" type="submit">上传并建立索引</button>
+            </form><p class="status" id="upload-status" role="status"></p>
+          </section>
+          <section class="panel"><div class="panel-head"><div><small>02 / SOURCE LIBRARY</small><h2>文档列表</h2></div><button type="button" class="secondary" id="refresh">刷新</button></div>
+            <div class="table-wrap"><table><thead><tr><th>文件名</th><th>分块</th><th>上传时间</th><th>操作</th></tr></thead><tbody id="documents"></tbody></table></div>
+            <p id="documents-status" class="hint"></p>
+          </section>
+          <section class="panel"><div class="panel-head"><div><small>03 / INDEX OPERATIONS</small><h2>向量索引管理</h2></div></div>
+            <p class="hint">当前配置：<code id="active-spec">—</code></p>
+            <p class="hint">数据库索引：<code id="stored-spec">—</code></p>
+            <p class="warning">重建会对所有已保存文本块重新调用 Embeddings 服务，可能产生费用。计算完成后才整体替换旧索引。</p>
+            <div class="query-toolbar" style="justify-content:flex-start"><button id="probe" type="button" class="secondary">测试 Embeddings 连接</button><button id="reindex" type="button" class="secondary">重新生成全部向量</button></div>
+            <p id="reindex-status" class="status" role="status"></p>
+          </section>
+        </div>
+        <div class="column">
+          <section class="panel ask-panel"><div class="panel-head"><div><small>04 / RETRIEVAL & ANSWERS</small><h2>知识问答实验室</h2></div></div>
+            <p class="hint">先单独测试检索，再调用 Langflow 生成答案。引用展示的是检索证据，不能代替事实核验。</p>
+            <form id="ask-form"><label for="question">测试问题</label>
+              <textarea id="question" rows="4" maxlength="1000" required placeholder="例如：工作日在线客服到几点？"></textarea>
+              <div class="query-toolbar"><label for="top-k">Top-K <select id="top-k"><option value="3">3</option><option value="1">1</option><option value="5">5</option></select></label>
+                <button id="search-button" class="secondary" type="button">只测试检索</button>
+                <button id="ask-button" type="submit">检索并生成回答</button></div>
+            </form>
+            <p id="ask-status" class="status" role="status"></p>
+            <div class="result" id="result" hidden>
+              <h3>模型回答</h3><p id="answer" class="answer"></p><p id="evidence-tag" class="hint"></p>
+              <h3>检索来源</h3><ol id="sources" class="sources"></ol>
+            </div>
+          </section>
+        </div>
+      </div>
+      <footer>当前是单管理员、共享知识库的本地教学项目。不要上传客户机密资料或直接暴露到公网。</footer>
+    </section>
+  </main>
+</body>
+</html>
