@@ -1,0 +1,28 @@
+name: SmartBiz CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m compileall -q app alembic tests
+      - run: python -m pytest -q tests
+      - run: |
+          for f in web/*.js; do node --check "$f"; done
+  image:
+    needs: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build for verification (no publication)
+        run: docker build -t smartbiz-ci:${{ github.sha }} .

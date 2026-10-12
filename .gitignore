@@ -39,3 +39,4 @@ test-results/
 # Runtime-only operations secrets
 ops/secrets/*
 !ops/secrets/.gitkeep
+/backups/

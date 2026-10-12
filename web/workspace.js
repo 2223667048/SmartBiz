@@ -8,12 +8,13 @@ const el = id => document.getElementById(id);
 const say = (id, value) => { el(id).textContent = String(value); };
 
 function clearPrivateUI() {
-  for (const id of ['documents', 'jobs', 'users', 'sources', 'audit-summary']) el(id).replaceChildren();
-  for (const id of ['answer', 'upload-status', 'ask-status', 'users-status', 'identity', 'job-metrics']) say(id, '');
-  for (const id of ['upload-form', 'ask-form', 'user-form']) el(id).reset();
+  for (const id of ['documents', 'jobs', 'users', 'sources', 'audit-summary', 'gateway-report']) el(id).replaceChildren();
+  for (const id of ['answer', 'upload-status', 'ask-status', 'users-status', 'identity', 'job-metrics', 'gateway-status', 'gateway-answer', 'gateway-usage']) say(id, '');
+  for (const id of ['upload-form', 'ask-form', 'user-form', 'gateway-form']) el(id).reset();
   el('admin-panel').hidden = true;
   el('users-card').hidden = true;
   el('audit-card').hidden = true;
+  el('gateway-report-card').hidden = true;
   el('workspace').hidden = true;
   say('identity', '未登录');
 }
@@ -118,7 +119,7 @@ el('login-form').addEventListener('submit',async ev=>{
     say('identity',`${actor.email} / ${actor.role}`);
     el('login-section').hidden=true;
     el('workspace').hidden=false;
-    el('admin-panel').hidden=!admin();el('users-card').hidden=!admin();el('audit-card').hidden=!admin();
+    el('admin-panel').hidden=!admin();el('users-card').hidden=!admin();el('audit-card').hidden=!admin();el('gateway-report-card').hidden=!admin();
     await refresh();guard(epoch);
     say('login-status','');
   } catch(e) {
@@ -171,3 +172,31 @@ el('user-form').addEventListener('submit',async ev=>{
 // bfcache history restoration can revive an already rendered document.
 window.addEventListener('pageshow', ev=>{if(ev.persisted)resetIdentity();});
 resetIdentity();
+
+// Lesson 10: direct provider-metered LLM call, separate from Langflow Agent.
+el('gateway-form').addEventListener('submit',async ev=>{
+  ev.preventDefault();const epoch=authEpoch;guard(epoch);
+  say('gateway-status','模型请求中...');
+  try{
+    const r=await api('/api/v2/model/chat',{method:'POST',data:{
+      question:el('gateway-question').value,
+      request_id:crypto.randomUUID(),max_output_tokens:300
+    }},epoch);
+    guard(epoch);
+    say('gateway-answer',r.answer);
+    say('gateway-usage',`输入 ${r.usage.prompt_tokens} tokens，输出 ${r.usage.completion_tokens} tokens，按配置单价核算约 $${(r.calculated_micro_usd/1000000).toFixed(6)}。仅包含当前网关调用。`);
+    say('gateway-status','已按供应商返回的用量记账');
+  }catch(e){if(epoch===authEpoch&&!isAbort(e))say('gateway-status',e.message)}
+});
+el('gateway-report-refresh').addEventListener('click',async()=>{
+  const epoch=authEpoch;guard(epoch);
+  try{
+    const r=await api('/api/v2/model/usage?days=7',{},epoch);
+    guard(epoch);el('gateway-report').replaceChildren();
+    for(const d of r.daily){
+      item(el('gateway-report'),String(d.utc_day),
+        `已计量 $${(d.used_micro_usd/1000000).toFixed(6)}，未结算预留 $${(d.held_micro_usd/1000000).toFixed(6)}，输入 ${d.reported_prompt_tokens}、输出 ${d.reported_completion_tokens} tokens`);
+    }
+    if(!r.daily.length)say('gateway-report','目前没有经过新网关的调用记录');
+  }catch(e){if(epoch===authEpoch&&!isAbort(e))say('gateway-report',e.message)}
+});

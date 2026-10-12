@@ -1,0 +1,11 @@
+services:
+  loadtest:
+    image: grafana/k6:0.57.0
+    profiles: ['loadtest']
+    environment:
+      BASE_URL: http://smartbiz:8000
+    volumes:
+      - ./ops/load:/scripts:ro
+    command: ['run','/scripts/smoke.js']
+    depends_on:
+      - smartbiz

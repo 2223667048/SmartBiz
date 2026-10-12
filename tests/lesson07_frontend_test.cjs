@@ -6,13 +6,13 @@ class Element {
   addEventListener(event,fn){this.listeners[event]=fn;}
   replaceChildren(){this.children=[];}
   appendChild(node){this.children.push(node);}
-  reset(){if(this.id==='ask-form')elements.question.value='';if(this.id==='upload-form')elements.file.files=[];}
+  reset(){if(this.id==='ask-form')elements.question.value='';if(this.id==='upload-form')elements.file.files=[];if(this.id==='gateway-form')elements['gateway-question'].value='';}
   click() {if(this.listeners.click)return this.listeners.click();if(this.onclick)return this.onclick();}
   async submit() {return this.listeners.submit({preventDefault(){}});}
 }
 const ids=['documents','jobs','users','sources','answer','upload-status','ask-status','users-status','identity',
  'job-metrics','audit-summary','audit-card','audit-refresh','upload-form','ask-form','user-form','login-form','login-status','login-section','workspace','admin-panel','users-card',
- 'password','email','question','file','visibility','logout','refresh','user-email','user-password','user-role'];
+ 'password','email','question','file','visibility','gateway-report','gateway-status','gateway-answer','gateway-usage','gateway-form','gateway-question','gateway-report-card','gateway-report-refresh','gateway-card','logout','refresh','user-email','user-password','user-role'];
 const elements=Object.fromEntries(ids.map(id=>[id,new Element(id)]));
 let pendingAsk;
 const calls=[];
@@ -55,6 +55,8 @@ vm.runInContext(fs.readFileSync('web/workspace.js','utf8'),ctx);
   assert.equal(elements.sources.children.length,0);
   assert.equal(elements.question.value,'');
   assert.equal(elements.answer.textContent,'');
+  assert.equal(elements['gateway-answer'].textContent,'');
+  assert.equal(elements['gateway-report'].children.length,0);
   elements.email.value='b@example.com';elements.password.value='secret-B';
   await elements['login-form'].submit();
   pendingAsk();await slow;

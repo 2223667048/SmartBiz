@@ -11,7 +11,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Query, File, Upload
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-from . import catalog, db, tickets, kb, embeddings, admin_auth, tenant_api, observability
+from . import catalog, db, tickets, kb, embeddings, admin_auth, tenant_api, observability, model_gateway_api
 from .tenant_backend import store as tenant_store
 from .langflow import AgentError, ask_agent
 from .settings import agent_mode
@@ -35,6 +35,7 @@ app.middleware("http")(observability.access_middleware)
 app.get("/internal/metrics", include_in_schema=False)(observability.serve_metrics)
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 app.include_router(tenant_api.router)
+app.include_router(model_gateway_api.router)
 
 
 def multi_tenant_mode() -> bool:
