@@ -1,0 +1,14 @@
+# APPLY ONLY AFTER inspecting and backing up the OLD Langflow database.
+# This override inherits the existing 'langflow-data:/app/langflow' mount;
+# do not use with a new Compose project name or before restoring original DB.
+services:
+  langflow:
+    image: ${LANGFLOW_PINNED_IMAGE:?Set LANGFLOW_PINNED_IMAGE to your currently tested release}
+    environment:
+      LANGFLOW_CONFIG_DIR: /app/langflow
+      LANGFLOW_SAVE_DB_IN_CONFIG_DIR: "true"
+      LANGFLOW_DATABASE_URL: sqlite:////app/langflow/langflow.db
+      LANGFLOW_SSRF_PROTECTION_ENABLED: "true"
+      LANGFLOW_CONNECTOR_SSRF_VALIDATION_ENABLED: "true"
+      LANGFLOW_CONNECTOR_SSRF_ALLOW_LOOPBACK: "false"
+      LANGFLOW_SSRF_ALLOWED_HOSTS: smartbiz

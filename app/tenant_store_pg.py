@@ -48,6 +48,10 @@ def migrate():
             row=conn.execute("SELECT to_regclass('public.audit_events') AS audit, to_regclass('public.organization_documents') AS docs").fetchone()
             if not row['audit'] or not row['docs']:
                 raise RuntimeError('Run alembic upgrade head before starting SmartBiz')
+            if os.getenv('GATEWAY_ENABLED','false').lower()=='true':
+                ver=conn.execute('SELECT version_num FROM alembic_version').fetchone()
+                if not ver or ver['version_num']!='0011_commercial':
+                    raise RuntimeError('Schema mismatch: rebuild migrate image, run alembic upgrade head (0011_commercial)')
             role=conn.execute('SELECT current_user AS name, rolbypassrls AS can_bypass, rolsuper AS is_super FROM pg_roles WHERE rolname=current_user').fetchone()
             if role['name']!='smartbiz_app' or role['can_bypass'] or role['is_super']:
                 raise RuntimeError('PG_APP_DSN must use smartbiz_app without BYPASSRLS or SUPERUSER')
@@ -81,6 +85,14 @@ def create_user(org_id,email,password,role,actor_id=None):
     uid=new_id()
     try:
         with _tx(org_id,'admin') as conn:
+            conn.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (org_id,))
+            entitlement=conn.execute('''SELECT s.status,p.max_seats FROM organization_subscriptions s
+              JOIN commercial_plans p ON p.code=s.plan_code WHERE s.organization_id=%s''',(org_id,)).fetchone()
+            if not entitlement or entitlement['status'] not in ('trial','active'):
+                raise ValueError('企业订阅不可用')
+            seat_count=conn.execute('SELECT count(*) AS n FROM organization_users WHERE organization_id=%s AND active=true',(org_id,)).fetchone()['n']
+            if seat_count>=entitlement['max_seats']:
+                raise ValueError('套餐账号数上限已达到')
             conn.execute('''INSERT INTO organization_users(id,organization_id,email,password_hash,role)
                 VALUES(%s,%s,%s,%s,%s)''',(uid,org_id,email,PASSWORD_HASH.hash(password),role))
             _audit(conn,org_id,actor_id,'user.create','user',uid,details={'role':role})
@@ -98,7 +110,8 @@ def login(email,password,source='local'):
         attempts=conn.execute('SELECT failures,window_started FROM auth_login_attempts WHERE principal_hash=%s',(key,)).fetchone()
         if attempts and now-attempts['window_started']<300 and attempts['failures']>=8:
             raise TooManyLoginAttempts()
-        row=conn.execute('SELECT * FROM organization_users WHERE email=%s AND active=true',(email,)).fetchone()
+        row=conn.execute('''SELECT u.* FROM organization_users u
+          WHERE u.email=%s AND u.active=true AND commercial_subscription_active(u.organization_id)''',(email,)).fetchone()
     dummy='$argon2id$v=19$m=65536,t=3,p=2$QXdCaUkwMGJuNTl0czBqSQ$Xpv6VkpPYcEPtEzz90UPYKDnDGFCqdIxdfXzXoxuGiQ'
     from argon2.exceptions import VerifyMismatchError, VerificationError
     try: verified=PASSWORD_HASH.verify(row['password_hash'] if row else dummy,password)
@@ -125,7 +138,8 @@ def actor_for_token(token):
     with _tx() as conn:
         row=conn.execute('''SELECT u.id,u.organization_id,u.email,u.role
           FROM organization_tokens t JOIN organization_users u ON u.id=t.user_id
-          WHERE t.token_hash=%s AND t.expires_at>%s AND u.active=true''',
+          WHERE t.token_hash=%s AND t.expires_at>%s AND u.active=true
+          AND commercial_subscription_active(u.organization_id)''',
           (hashlib.sha256(token.encode()).hexdigest(),int(time.time()))).fetchone()
     return dict(row) if row else None
 

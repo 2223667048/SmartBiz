@@ -1,0 +1,59 @@
+# Append after docker-compose.gateway.yml (no new production database service).
+services:
+  smartbiz:
+    env_file:
+      - .env.gateway
+      - .env.commercial
+  migrate:
+    build: .
+
+  # Dedicated disposable cluster for automated 0011 integration tests.
+  postgres-test11:
+    profiles: [pgtest11]
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: smartbiz_owner
+      POSTGRES_DB: smartbiz_test11
+      POSTGRES_PASSWORD: ${PG_OWNER_PASSWORD:?Missing PG_OWNER_PASSWORD}
+      PG_APP_PASSWORD: ${PG_APP_PASSWORD:?Missing PG_APP_PASSWORD}
+      PG_WORKER_PASSWORD: ${PG_WORKER_PASSWORD:?Missing PG_WORKER_PASSWORD}
+    volumes:
+      - ./docker/postgres-init/01-roles.sh:/docker-entrypoint-initdb.d/01-roles.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U smartbiz_owner -d smartbiz_test11']
+      interval: 5s
+      retries: 20
+      timeout: 5s
+
+  migrate-test11:
+    profiles: [pgtest11]
+    build: .
+    command: [alembic, upgrade, head]
+    environment:
+      PG_MIGRATION_DSN: postgresql+psycopg://smartbiz_owner:${PG_OWNER_PASSWORD}@postgres-test11:5432/smartbiz_test11
+    depends_on:
+      postgres-test11:
+        condition: service_healthy
+
+  pgtest11:
+    profiles: [pgtest11]
+    build: .
+    command: [python, -m, pytest, -q, tests/test_lesson11_pg_live.py, tests/test_lesson12_pg_live.py]
+    environment:
+      RUN_PG_LIVE_TESTS: '1'
+      SMARTBIZ_TEST_CLUSTER: lesson11
+      SMARTBIZ_TENANT_BACKEND: postgres
+      SMARTBIZ_MULTI_TENANT: 'true'
+      PG_MIGRATION_DSN: postgresql+psycopg://smartbiz_owner:${PG_OWNER_PASSWORD}@postgres-test11:5432/smartbiz_test11
+      PG_APP_DSN: postgresql://smartbiz_app:${PG_APP_PASSWORD}@postgres-test11:5432/smartbiz_test11
+      PG_WORKER_DSN: postgresql://smartbiz_worker:${PG_WORKER_PASSWORD}@postgres-test11:5432/smartbiz_test11
+      GATEWAY_ENABLED: 'true'
+      GATEWAY_PROVIDER_API_KEY: local-fixture
+      GATEWAY_MODEL: gpt-4.1-mini
+      SMARTBIZ_DB_PATH: /tmp/smartbiz-test11.sqlite3
+      SMARTBIZ_UPLOAD_DIR: /tmp/smartbiz-test11-uploads
+    volumes:
+      - ./tests:/srv/app/tests:ro
+    depends_on:
+      migrate-test11:
+        condition: service_completed_successfully

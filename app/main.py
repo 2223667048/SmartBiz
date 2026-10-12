@@ -36,6 +36,9 @@ app.get("/internal/metrics", include_in_schema=False)(observability.serve_metric
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 app.include_router(tenant_api.router)
 app.include_router(model_gateway_api.router)
+from . import commercial_proxy, commercial_api
+app.include_router(commercial_proxy.router)
+app.include_router(commercial_api.router)
 
 
 def multi_tenant_mode() -> bool:

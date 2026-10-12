@@ -45,6 +45,8 @@ async def _run_metered(actor, prompt, request_id, max_output_tokens, conf):
     try:
         call_id=ledger.reserve(actor,str(request_id),conf['model'],day,
                                conf['daily_micro'],conf['hold_micro'],conf['prices'])
+    except (ledger.SubscriptionInactive,ledger.PlanQuotaExceeded):
+        raise HTTPException(402,'企业订阅已暂停或月度配额不足') from None
     except ledger.BudgetExceeded:
         raise HTTPException(429,'企业模型网关每日预算不足；请联系管理员',headers={'Retry-After':'3600'}) from None
     except ledger.DuplicateRequest:

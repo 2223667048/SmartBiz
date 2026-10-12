@@ -90,3 +90,22 @@ async def provider_completion(question: str, max_output_tokens: int, conf: dict)
         return answer,usage,str(data.get('id',''))[:160]
     except (KeyError,IndexError,TypeError,ValueError,UnknownUsage) as exc:
         raise UnknownUsage('供应商输出或 usage 格式不完整，计费状态未知') from exc
+
+
+async def provider_raw_chat(payload: dict, conf: dict):
+    """Pass-through text/function-call response. No stream; metering fails closed on unknown usage."""
+    if payload.get('stream') is not False:
+        raise UpstreamError('stream not metered')
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(90.0,connect=10.0),follow_redirects=False) as client:
+            resp=await client.post(conf['base']+'/chat/completions',json=payload,
+                                   headers={'Authorization':'Bearer '+conf['api_key']})
+            if resp.is_redirect or resp.status_code>=400:
+                raise UpstreamError('upstream failure')
+            data=resp.json()
+    except (httpx.HTTPError,ValueError) as exc:
+        raise UpstreamError('upstream response invalid') from exc
+    if not isinstance(data,dict) or not isinstance(data.get('choices'),list) or not data['choices']:
+        raise UnknownUsage('upstream choices missing')
+    usage=parse_usage(data)
+    return data,usage

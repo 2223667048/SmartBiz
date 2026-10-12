@@ -6,6 +6,7 @@ actor, and the transaction's SET LOCAL RLS context is never client-controlled.
 import uuid
 from psycopg import errors
 from .tenant_store_pg import _tx
+from .commercial_pg import SubscriptionInactive,PlanQuotaExceeded,enforce_monthly_quota
 
 
 class BudgetExceeded(Exception):
@@ -21,6 +22,7 @@ def reserve(actor, idempotency_key, model, utc_day, limit_micro, hold_micro, pri
     call_id = str(uuid.uuid4())
     try:
         with _tx(org, actor['role']) as conn:
+            enforce_monthly_quota(conn,org,hold_micro)
             # Atomic upsert increment: concurrent app workers share one quota.
             row = conn.execute('''INSERT INTO model_gateway_daily
               (organization_id,utc_day,held_micro_usd)

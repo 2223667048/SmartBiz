@@ -5,11 +5,13 @@
 .env.ops
 !.env.example
 !.env.*.example
+*.local.json
 
 # Python environments, caches, and coverage
 .venv/
 .venv-*/
 venv/
+backups/
 __pycache__/
 .pytest_cache/
 *.py[cod]
@@ -28,6 +30,7 @@ langflow-data/
 
 # Backups and database exports
 *.zip
+*.tar.gz
 *.sql.dump
 *.dump
 
@@ -39,4 +42,4 @@ test-results/
 # Runtime-only operations secrets
 ops/secrets/*
 !ops/secrets/.gitkeep
-/backups/
+/langflow-backups/

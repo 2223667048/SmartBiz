@@ -12,7 +12,7 @@ class Element {
 }
 const ids=['documents','jobs','users','sources','answer','upload-status','ask-status','users-status','identity',
  'job-metrics','audit-summary','audit-card','audit-refresh','upload-form','ask-form','user-form','login-form','login-status','login-section','workspace','admin-panel','users-card',
- 'password','email','question','file','visibility','gateway-report','gateway-status','gateway-answer','gateway-usage','gateway-form','gateway-question','gateway-report-card','gateway-report-refresh','gateway-card','logout','refresh','user-email','user-password','user-role'];
+ 'password','email','question','file','visibility','gateway-report','gateway-status','gateway-answer','gateway-usage','gateway-form','gateway-question','gateway-report-card','gateway-report-refresh','gateway-card','commercial-card','commercial-admin-card','commercial-plan','commercial-routes','commercial-draft','commercial-recon','commercial-refresh','commercial-billing-refresh','commercial-month','logout','refresh','user-email','user-password','user-role'];
 const elements=Object.fromEntries(ids.map(id=>[id,new Element(id)]));
 let pendingAsk;
 const calls=[];
@@ -30,6 +30,8 @@ async function fetchFake(path,config={}){
   if(path==='/api/v2/jobs/metrics')return response({counts:{succeeded:1},oldest_queued_seconds:0,stale_leases:0});
   if(path==='/api/v2/jobs')return response([{id:activeUser+'-JOB',state:'succeeded',attempts:1,max_attempts:3}]);
   if(path==='/api/v2/users')return response([{email:activeUser+'@example.com',role:'admin',active:true}]);
+  if(path==='/api/v2/commercial/subscription')return response({display_name:'Starter',status:'trial',plan_code:'starter',monthly_model_cap_micro_usd:2000000,max_seats:5});
+  if(path==='/api/v2/commercial/routes')return response({models:[{alias:'tenant-default',model:'gpt-test'}]});
   if(path==='/api/v2/ask'){
     if(activeUser==='A')return new Promise(resolve=>{pendingAsk=()=>resolve(response({answer:'A-PRIVATE-ANSWER',sources:[{filename:'A-SECRET.md',excerpt:'A-SECRET'}],evidence_status:'ok'}));});
     return response({answer:'B-ANSWER',sources:[],evidence_status:'ok'});
@@ -57,6 +59,8 @@ vm.runInContext(fs.readFileSync('web/workspace.js','utf8'),ctx);
   assert.equal(elements.answer.textContent,'');
   assert.equal(elements['gateway-answer'].textContent,'');
   assert.equal(elements['gateway-report'].children.length,0);
+  assert.equal(elements['commercial-plan'].children.length,0);
+  assert.equal(elements['commercial-draft'].children.length,0);
   elements.email.value='b@example.com';elements.password.value='secret-B';
   await elements['login-form'].submit();
   pendingAsk();await slow;

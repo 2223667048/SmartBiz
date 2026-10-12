@@ -8,13 +8,14 @@ const el = id => document.getElementById(id);
 const say = (id, value) => { el(id).textContent = String(value); };
 
 function clearPrivateUI() {
-  for (const id of ['documents', 'jobs', 'users', 'sources', 'audit-summary', 'gateway-report']) el(id).replaceChildren();
+  for (const id of ['documents', 'jobs', 'users', 'sources', 'audit-summary', 'gateway-report', 'commercial-plan', 'commercial-routes', 'commercial-draft', 'commercial-recon']) el(id).replaceChildren();
   for (const id of ['answer', 'upload-status', 'ask-status', 'users-status', 'identity', 'job-metrics', 'gateway-status', 'gateway-answer', 'gateway-usage']) say(id, '');
   for (const id of ['upload-form', 'ask-form', 'user-form', 'gateway-form']) el(id).reset();
   el('admin-panel').hidden = true;
   el('users-card').hidden = true;
   el('audit-card').hidden = true;
   el('gateway-report-card').hidden = true;
+  el('commercial-card').hidden = true; el('commercial-admin-card').hidden = true;
   el('workspace').hidden = true;
   say('identity', '未登录');
 }
@@ -120,7 +121,9 @@ el('login-form').addEventListener('submit',async ev=>{
     el('login-section').hidden=true;
     el('workspace').hidden=false;
     el('admin-panel').hidden=!admin();el('users-card').hidden=!admin();el('audit-card').hidden=!admin();el('gateway-report-card').hidden=!admin();
+    el('commercial-card').hidden=false;el('commercial-admin-card').hidden=!admin();
     await refresh();guard(epoch);
+    try {await loadCommercial(epoch)} catch(e) {if(!isAbort(e))say('login-status','套餐信息暂不可用');}
     say('login-status','');
   } catch(e) {
     if(epoch===authEpoch && !isAbort(e)) {resetIdentity();say('login-status',e.message);}
@@ -199,4 +202,46 @@ el('gateway-report-refresh').addEventListener('click',async()=>{
     }
     if(!r.daily.length)say('gateway-report','目前没有经过新网关的调用记录');
   }catch(e){if(epoch===authEpoch&&!isAbort(e))say('gateway-report',e.message)}
+});
+
+// Lesson 11: clear on identity switches and guard every async response.
+async function loadCommercial(epoch=authEpoch){
+  guard(epoch);
+  const [plan, routes] = await Promise.all([
+    api('/api/v2/commercial/subscription',{},epoch),
+    api('/api/v2/commercial/routes',{},epoch)
+  ]);
+  guard(epoch);
+  el('commercial-plan').replaceChildren(); el('commercial-routes').replaceChildren();
+  item(el('commercial-plan'),`${plan.display_name} / ${plan.status}`,
+    `套餐：${plan.plan_code} · 月模型内部额度 $${(plan.monthly_model_cap_micro_usd/1e6).toFixed(2)} · 人员上限 ${plan.max_seats}`);
+  for(const route of routes.models){
+    item(el('commercial-routes'),route.alias,`实际模型：${route.model}（仅连接网关的调用可计量）`);
+  }
+}
+el('commercial-refresh').addEventListener('click',async()=>{
+  const epoch=authEpoch;
+  try{await loadCommercial(epoch)}catch(e){if(!isAbort(e)&&epoch===authEpoch)alert(e.message)}
+});
+el('commercial-billing-refresh').addEventListener('click',async()=>{
+  const epoch=authEpoch;
+  try{
+    guard(epoch);
+    const period=el('commercial-month').value || new Date().toISOString().slice(0,7);
+    const [year,month]=period.split('-').map(Number);
+    const [report,recon]=await Promise.all([
+      api(`/api/v2/commercial/billing/draft?year=${year}&month=${month}`,{},epoch),
+      api('/api/v2/commercial/reconciliation',{},epoch)
+    ]);
+    guard(epoch);
+    el('commercial-draft').replaceChildren();el('commercial-recon').replaceChildren();
+    item(el('commercial-draft'),`${report.period} · 未核对计费草稿`,
+      `固定费 $${(report.subscription_fee_micro_usd/1e6).toFixed(2)} · `+
+      `网关内部用量估算 $${(report.gateway_internal_cost_micro_usd/1e6).toFixed(6)} · `+
+      `演示合计 $${(report.illustrative_total_micro_usd/1e6).toFixed(6)} · 不可直接收费`);
+    for(const row of recon.rows){
+      item(el('commercial-recon'),`${row.status}：${row.n} 条`,
+        `供应商导入值差额 ${row.delta} micro USD；未匹配项不自动归属企业`);
+    }
+  }catch(e){if(!isAbort(e)&&epoch===authEpoch)alert(e.message)}
 });
