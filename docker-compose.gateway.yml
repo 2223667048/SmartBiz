@@ -39,7 +39,7 @@ services:
   pgtest10:
     profiles: ['pgtest10']
     build: .
-    command: ['python','-m','pytest','-q','tests/test_lesson10_pg_live.py']
+    command: ['python','-m','pytest','-q','tests/test_gateway_pg_live.py']
     environment:
       RUN_PG_LIVE_TESTS: '1'
       PG_APP_DSN: postgresql://smartbiz_app:${PG_APP_PASSWORD}@postgres-test10:5432/smartbiz_test10

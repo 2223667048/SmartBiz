@@ -1,4 +1,4 @@
-"""Lesson 11: tenant subscription, metered proxy keys and reconciliation evidence.
+"""Commercial: tenant subscription, metered proxy keys and reconciliation evidence.
 
 Revision ID: 0011_commercial
 Revises: 0010_gateway_usage

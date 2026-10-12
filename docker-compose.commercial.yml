@@ -38,10 +38,10 @@ services:
   pgtest11:
     profiles: [pgtest11]
     build: .
-    command: [python, -m, pytest, -q, tests/test_lesson11_pg_live.py, tests/test_lesson12_pg_live.py]
+    command: [python, -m, pytest, -q, tests/test_commercial_pg_live.py, tests/test_delivery_pg_live.py]
     environment:
       RUN_PG_LIVE_TESTS: '1'
-      SMARTBIZ_TEST_CLUSTER: lesson11
+      SMARTBIZ_TEST_CLUSTER: commercial
       SMARTBIZ_TENANT_BACKEND: postgres
       SMARTBIZ_MULTI_TENANT: 'true'
       PG_MIGRATION_DSN: postgresql+psycopg://smartbiz_owner:${PG_OWNER_PASSWORD}@postgres-test11:5432/smartbiz_test11

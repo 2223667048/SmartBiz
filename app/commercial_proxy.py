@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 from . import model_gateway as mg
 
 log = logging.getLogger(__name__)
-router=APIRouter(prefix='/v1', tags=['Lesson 11 tenant model proxy'])
+router=APIRouter(prefix='/v1', tags=['Commercial tenant model proxy'])
 _ALIAS=re.compile(r'^[A-Za-z0-9_.-]{1,64}$')
 
 

@@ -1,110 +1,132 @@
-# 智企 AI · SmartBiz Agent 教学 MVP
+# SmartBiz 企业智能业务平台
 
-基于 [Langflow](https://github.com/langflow-ai/langflow) 的**独立业务项目**。Langflow 是 MIT 开源软件；本仓库里的业务层示例可自主修改。使用原项目时仍需保留适用的 MIT 许可和版权声明。
+SmartBiz 是面向企业场景的智能业务平台，整合多租户账号体系、企业知识库、Langflow 工作流、模型网关、用量计量、订阅控制和运维监控。后端采用 FastAPI，数据层支持 PostgreSQL、pgvector 与 Alembic，服务通过 Docker Compose 统一编排。
 
-> 这是从 0 到 1 的**可本地运行 MVP**，不是具备完整 SaaS 租户隔离的生产系统，也不是对原 Langflow 仓库的完整复制。需要互联网/镜像源以及模型服务凭证（mock 不需要）。
+## 核心能力
 
-## 你拿到的功能
-- 浏览器 AI 对话页面（默认 mock，不花费模型调用费）
-- 会话 token 隔离、持久化聊天记录到 SQLite
-- 客户留资（明确勾选同意）、评价、人工处理工单、简易管理员统计/查看接口
-- Langflow `/api/v1/run/{flow_id}` 集成与错误保护
-- pytest 自动化测试、Docker Compose、本地开发说明
-- `extensions/lead_intent.py` 可复制到 Langflow Custom Component 作为学习扩展
+- 企业账号、角色权限、令牌撤销与租户数据隔离
+- 文档上传、异步索引、向量检索、引用式知识问答
+- Langflow 工作流接入及企业专属模型路由
+- OpenAI-compatible 模型代理、调用计量和预算控制
+- 订阅套餐、企业密钥、用量账本与对账数据管理
+- PostgreSQL RLS、审计日志、请求限流和任务状态监控
+- Prometheus、Alertmanager、Caddy TLS 与发布前检查
+- SQLite 本地运行模式和 PostgreSQL 服务化部署模式
 
-## 推荐：零依赖 AI 服务先运行业务层（Python 3.10+）
+## 系统结构
 
-```bash
-# 进入解压后的 smartbiz-agent-starter 目录
-python -m venv .venv
-# macOS/Linux:
-source .venv/bin/activate
-# Windows PowerShell:
-# .venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-# macOS/Linux:
-cp .env.example .env
-# Windows PowerShell:
-# Copy-Item .env.example .env
-# .env 默认 AGENT_MODE=mock，无需模型 Key
-python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```text
+web/                    工作台与知识库管理页面
+app/main.py             FastAPI 应用入口
+app/tenant_api.py       企业账号、文档、检索与问答接口
+app/tenant_store_pg.py  PostgreSQL 租户数据访问与 RLS 上下文
+app/tenant_worker.py    文档索引后台任务
+app/embeddings.py       向量模型适配器
+app/commercial_proxy.py 企业模型代理与计量兼容接口
+app/model_gateway.py    上游模型调用与费用计算
+app/delivery_control.py 发布与交付检查
+alembic/                PostgreSQL 数据库迁移
+extensions/             Langflow 自定义业务组件
+scripts/                诊断、备份、恢复和发布检查脚本
+tests/                  单元、接口和隔离环境集成测试
 ```
 
-浏览器打开 **http://127.0.0.1:8000**。测试用例：输入「怎么收费？」；点击回答“有帮助/没帮助”；提交客户需求（先同意），再创建一张工单。看到「演示模式」是**预期结果**，表示还没有真正连 AI。按 `Ctrl+C` 退出。
+## 快速启动
 
-## 第二步：Langflow（Docker）
+环境要求：Docker Desktop、Docker Compose，以及可选的 Python 3.10+ 本地开发环境。
 
-```bash
-# 先安装好 Docker Desktop；修改 .env 中的 LANGFLOW_SUPERUSER_PASSWORD
-# 一键启动两个容器（前提：.env 已创建）：
-docker compose up --build -d
-# 打开 http://127.0.0.1:7860 进入 Langflow
-# 打开 http://127.0.0.1:8000 进入 SmartBiz
+```powershell
+Copy-Item .env.example .env
+Copy-Item .env.pg.example .env.pg
+Copy-Item .env.ops.example .env.ops
+Copy-Item .env.gateway.example .env.gateway
+Copy-Item .env.commercial.example .env.commercial
 ```
 
-Docker Compose 模式会使用两个数据卷持久化 SQLite 和 Langflow 数据。不要同时保留前面的本地 uvicorn 服务占用 8000 端口。第一次下载镜像时需要网络；无法下载时先检查 Docker/代理，不要删除数据卷。
+启动基础服务：
 
-## 第三步：从 mock 切换真正 Agent
-按 `docs/02-Langflow配置.md` 在 Langflow 建立并验证 Chat Input → Model → Chat Output 工作流，创建 Langflow API Key 和复制 Flow ID。修改根目录 `.env`：
+```powershell
+docker compose up -d --build
+```
+
+完整 PostgreSQL 部署：
+
+```powershell
+$dc = @(
+  '--env-file','.env','--env-file','.env.pg','--env-file','.env.ops',
+  '--env-file','.env.gateway','--env-file','.env.commercial',
+  '-f','docker-compose.yml','-f','docker-compose.pg.yml',
+  '-f','docker-compose.ops.yml','-f','docker-compose.gateway.yml',
+  '-f','docker-compose.commercial.yml'
+)
+docker compose @dc config --quiet
+docker compose @dc up -d --build
+```
+
+服务入口：
+
+- SmartBiz 工作台：<http://127.0.0.1:8000/workspace>
+- OpenAPI：<http://127.0.0.1:8000/docs>
+- Langflow：<http://127.0.0.1:7860>
+- Prometheus：<http://127.0.0.1:9090>
+- Alertmanager：<http://127.0.0.1:9093>
+
+## Langflow 企业工作流
+
+企业工作流通过 SmartBiz 的 OpenAI-compatible 代理调用授权模型：
+
+```text
+Base URL: http://smartbiz:8000/v1
+Model: tenant-default
+API Key: 企业独立的 sbm_... 密钥
+```
+
+代理支持普通响应以及 Langflow Agent 使用的流式兼容响应。上游响应完成并确认 `usage` 后才写入企业计量账本，避免流式中断造成用量遗漏。内部服务访问由 `LANGFLOW_SSRF_ALLOWED_HOSTS=smartbiz` 明确授权。
+
+## 知识库配置
+
+云端向量模式需要在 `.env` 中配置：
 
 ```dotenv
-AGENT_MODE=langflow
-LANGFLOW_FLOW_ID=从画布获得的真实 Flow ID
-LANGFLOW_API_KEY=从 Langflow 设置页生成的真实 API Key
+RAG_EMBEDDING_MODE=openai
+RAG_EMBEDDING_BASE_URL=https://your-provider.example/v1
+RAG_EMBEDDING_API_KEY=replace-with-secret
+RAG_EMBEDDING_MODEL=your-embedding-model
+RAG_EMBEDDING_DIMENSIONS=1536
 ```
 
-如果使用 Python 启动的 SmartBiz，`LANGFLOW_URL=http://127.0.0.1:7860`；如果使用 Docker Compose，会自动覆盖为容器内的 `http://langflow:7860`。配置修改后重启（Python 重新运行；Docker `docker compose up -d --force-recreate smartbiz`）。
-
-## 快速查看数据（管理接口仅供本地演示）
-
-配置 `.env` 里的 `ADMIN_API_KEY` 为足够长的随机秘密并重启，再运行（替换下面示例值）：
-
-```bash
-curl -H "X-Admin-Key: REPLACE_WITH_YOUR_ADMIN_API_KEY" http://127.0.0.1:8000/api/admin/stats
-curl -H "X-Admin-Key: REPLACE_WITH_YOUR_ADMIN_API_KEY" http://127.0.0.1:8000/api/admin/leads
-curl -H "X-Admin-Key: REPLACE_WITH_YOUR_ADMIN_API_KEY" http://127.0.0.1:8000/api/admin/messages
-curl -H "X-Admin-Key: REPLACE_WITH_YOUR_ADMIN_API_KEY" http://127.0.0.1:8000/api/admin/tickets
-```
-
-也可在 http://127.0.0.1:8000/docs 查看 OpenAPI 接口列表。严禁把后端管理员 Key 或 Langflow Key 写到浏览器代码中。
+切换模型或维度后必须重新索引已有文档。PostgreSQL 当前接受 1–2000 维有限数值向量，生产配置应固定维度，避免供应商默认值变化造成索引不兼容。
 
 ## 测试
 
-```bash
-python -m pytest -q
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
-## 源码结构
+独立 PostgreSQL 集成测试由 Compose 的测试 profile 运行，不应指向业务数据库。常用测试按能力命名，例如：
 
-```text
-app/main.py        FastAPI HTTP 路由；输入验证与权限边界
-app/langflow.py    Langflow 适配器（未来切换其他 Agent 框架只动这里）
-app/db.py          SQLite 表结构与持久化
-app/tickets.py     工单新增、查询、状态流转
-app/settings.py    配置
-web/               HTML/CSS/JS 聊天与留资页面
-extensions/        Langflow 自定义组件示例
-tests/             自动化测试
-docs/              学习路线、源码地图、RAG、商业上线清单
-```
+- `tests/test_tenant_security.py`
+- `tests/test_gateway.py`
+- `tests/test_commercial.py`
+- `tests/test_delivery.py`
 
-## 错误处理
-- `AGENT_MODE=mock` 返回“演示模式”：是正确行为，**没有真实模型推理**。
-- 真正调用时返回 502：检查 Langflow 是否启动、FLOW_ID 是否正确、API Key 是否有效、Flow 是否有 Chat Output。
-- 登录失败：检查 `LANGFLOW_SUPERUSER_PASSWORD` 是否强密码，且根据所用镜像配置对应用户名。
-- 浏览器聊天 401：当前会话失效，新建会话。
-- Docker 镜像下载失败：网络/镜像仓库问题，先单独运行 `docker pull langflowai/langflow:latest` 验证。
+## 运维与安全
 
-## 学习文档
-请依序阅读：`docs/00-路线图.md`、`docs/01-源码导读.md`、`docs/02-Langflow配置.md`、`docs/03-商业上线清单.md`、`docs/04-业务模块拆解.md`。
+- `.env`、`.env.*`、数据库备份、运行日志和本地密钥不得提交到版本库。
+- 不同企业必须使用不同的模型代理密钥，密钥只在创建时显示一次。
+- 禁止使用 `docker compose down -v` 处理普通故障，以免删除业务卷。
+- 数据库迁移、恢复和回滚前先创建可验证备份。
+- 对公网部署前应完成域名、TLS、密钥托管、访问控制、备份恢复、容量和安全评估。
+- 模型计量依赖供应商返回的 `usage`；未知用量请求会进入待核对状态，不会被静默忽略。
 
-官方来源：
-- Langflow GitHub https://github.com/langflow-ai/langflow
-- API https://docs.langflow.org/api-flows-run
-- Docker https://docs.langflow.org/deployment-docker
-- Knowledge Base https://docs.langflow.org/knowledge
-- Custom components https://docs.langflow.org/extensions-quickstart
+## 项目文档
 
-## 第十课：可计量模型网关与交付
+- [架构与源码说明](docs/01-源码导读.md)
+- [Langflow 配置](docs/02-Langflow配置.md)
+- [上线检查清单](docs/03-商业上线清单.md)
+- [业务模块说明](docs/04-业务模块拆解.md)
+- [客户交付验收模板](docs/16-客户交付验收模板.md)
 
-请先阅读 `README-LESSON10.md`，再阅读 `docs/13-第十课-计量模型网关-备份-负载-CICD.md`。这是一条与 Langflow Agent 独立的新计量调用路径；不声称现有 Langflow 全部 Token 被统计。
+## 许可证与第三方组件
+
+项目使用的第三方组件分别遵循其自身许可证。Langflow 采用 MIT License；部署或分发时请保留适用的版权及许可证声明。

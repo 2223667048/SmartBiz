@@ -1,4 +1,4 @@
-"""Lesson 8: tenant rate budgets, account revocation and scoped job metrics."""
+"""Tenant security: tenant rate budgets, account revocation and scoped job metrics."""
 from pathlib import Path
 import time
 

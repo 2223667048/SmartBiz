@@ -1,4 +1,4 @@
-"""Embedding adapters for lesson 4. Demo hashing is NOT semantic understanding."""
+"""Embedding adapters. Local hash vectors are NOT semantic embeddings."""
 import hashlib
 import math
 import os
@@ -39,7 +39,7 @@ def index_spec() -> str:
             raise EmbeddingError("Embedding model/base URL configuration invalid")
         # Fingerprint prevents using incompatible vectors after model changes.
         dims = dimensions()
-        # Preserve lesson-4 fingerprints when dimensions is unset.
+        # Preserve legacy fingerprints when dimensions is unset.
         digest = hashlib.sha256((f"{base}|{model}" + (f"|dims={dims}" if dims else "")).encode()).hexdigest()[:16]
         return f"openai:{model}:{digest}"
     raise EmbeddingError("RAG_EMBEDDING_MODE must be demo or openai")

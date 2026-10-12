@@ -9,7 +9,7 @@
 </head>
 <body>
   <main class="layout">
-    <header><div><p class="eyebrow">SMARTBIZ AI · MVP</p><h1>企业智能客服 Agent</h1>
+    <header><div><p class="eyebrow">SMARTBIZ AI</p><h1>企业智能客服 Agent</h1>
       <p class="subtitle">让知识库回答问题，让客户需求留下来。</p></div>
       <div style="display:flex;gap:12px;align-items:center"><a href="/admin" style="font-size:13px;color:#335c98">知识库后台</a><button id="new-session" class="muted" type="button">新建会话</button></div></header>
     <section class="chat" aria-label="AI 问答">
@@ -27,7 +27,7 @@
         <div class="two"><label>称呼<input name="name" maxlength="60" required placeholder="张先生"></label>
           <label>联系方式<input name="contact" maxlength="100" minlength="5" required placeholder="邮箱或电话"></label></div>
         <label>希望解决什么问题？<textarea name="requirement" maxlength="2000" required placeholder="请说明业务需求"></textarea></label>
-        <label class="consent"><input type="checkbox" name="consent" required> 我同意保存上述信息以便联系；演示项目未提供自动删除功能。</label>
+        <label class="consent"><input type="checkbox" name="consent" required> 我同意保存上述信息以便联系；如需删除数据请联系管理员。</label>
         <button type="submit" id="lead-send">提交需求</button><span id="lead-status" role="status"></span>
       </form>
     </section>
@@ -41,7 +41,7 @@
       <button type="button" id="ticket-refresh" class="muted">查看本会话工单</button>
       <ul id="ticket-list"></ul>
     </section>
-    <footer>演示系统：不输入个人敏感信息或机密文件。未经安全加固，请勿部署为公开商业服务。</footer>
+    <footer>请勿输入非必要的个人敏感信息；公网部署前应完成安全配置与合规评估。</footer>
   </main>
 </body>
 </html>

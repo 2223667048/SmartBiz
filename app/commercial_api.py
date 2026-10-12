@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from .tenant_api import require_manager, require_actor
 from . import commercial_proxy
 
-router=APIRouter(prefix='/api/v2/commercial', tags=['Lesson 11 SaaS reports'])
+router=APIRouter(prefix='/api/v2/commercial', tags=['Commercial SaaS reports'])
 
 @router.get('/subscription')
 def subscription(actor=Depends(require_actor)):

@@ -15,7 +15,7 @@ def ledger_backend():
     from . import gateway_ledger_pg
     return gateway_ledger_pg
 
-router = APIRouter(prefix='/api/v2/model',tags=['Lesson 10 metered gateway'])
+router = APIRouter(prefix='/api/v2/model',tags=['Gateway metered gateway'])
 log = logging.getLogger(__name__)
 
 class ChatRequest(BaseModel):

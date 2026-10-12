@@ -6,8 +6,8 @@ import os
 import uuid
 from decimal import Decimal
 import pytest
-pytestmark=pytest.mark.skipif(os.getenv('RUN_PG_LIVE_TESTS')!='1' or os.getenv('SMARTBIZ_TEST_CLUSTER')!='lesson11',
-                              reason='requires disposable Lesson 11 PG test cluster')
+pytestmark=pytest.mark.skipif(os.getenv('RUN_PG_LIVE_TESTS')!='1' or os.getenv('SMARTBIZ_TEST_CLUSTER')!='commercial',
+                              reason='requires disposable Commercial PG test cluster')
 
 
 def test_pg_subscription_proxy_reconcile_real_db(monkeypatch):
@@ -17,8 +17,8 @@ def test_pg_subscription_proxy_reconcile_real_db(monkeypatch):
     from app.main import app
     from app.model_gateway import parse_usage
     suffix=uuid.uuid4().hex[:10]
-    a=store.create_org('L11-a-'+suffix,'a-'+suffix+'@example.invalid','Valid-Password-For-Lesson-11-123!')
-    b=store.create_org('L11-b-'+suffix,'b-'+suffix+'@example.invalid','Valid-Password-For-Lesson-11-123!')
+    a=store.create_org('commercial-a-'+suffix,'a-'+suffix+'@example.invalid','Valid-Commercial-Test-Password-123!')
+    b=store.create_org('commercial-b-'+suffix,'b-'+suffix+'@example.invalid','Valid-Commercial-Test-Password-123!')
     admin={'id':a['user_id'],'organization_id':a['organization_id'],'role':'admin'}
     other={'id':b['user_id'],'organization_id':b['organization_id'],'role':'admin'}
     assert commercial_pg.entitlement(admin)['plan_code']=='starter'
@@ -73,4 +73,4 @@ def test_pg_subscription_proxy_reconcile_real_db(monkeypatch):
         assert client.get('/v1/models',headers={'Authorization':'Bearer '+secret}).status_code==401
     with ops.owner_connect() as conn:
         ops.assign(conn,a['organization_id'],'team','suspended','test-operator')
-    assert store.login('a-'+suffix+'@example.invalid','Valid-Password-For-Lesson-11-123!') is None
+    assert store.login('a-'+suffix+'@example.invalid','Valid-Commercial-Test-Password-123!') is None

@@ -28,7 +28,7 @@ def test_chat_and_feedback(client):
     assert client.post("/api/chat", json={"message": "Hi"}).status_code == 401
     r = client.post("/api/chat", headers=headers, json={"message": "怎么收费？"})
     assert r.status_code == 200
-    assert "演示模式" in r.json()["reply"]
+    assert "本地回退模式" in r.json()["reply"]
     mid = r.json()["message_id"]
     assert client.post("/api/feedback", headers=headers,
                        json={"message_id": mid, "score": 1}).status_code == 200

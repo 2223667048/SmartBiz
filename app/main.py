@@ -30,7 +30,7 @@ async def lifespan(_: FastAPI):
     yield
 
 
-app = FastAPI(title="SmartBiz AI MVP", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="SmartBiz AI Platform", version="0.1.0", lifespan=lifespan)
 app.middleware("http")(observability.access_middleware)
 app.get("/internal/metrics", include_in_schema=False)(observability.serve_metrics)
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
@@ -415,7 +415,7 @@ async def chat(data: ChatIn, session_id: str = Depends(require_session)):
     if not text:
         raise HTTPException(status_code=422, detail="问题不能为空")
     if db.message_count(session_id) >= 100:
-        raise HTTPException(status_code=429, detail="此会话已达演示上限，请新建会话")
+        raise HTTPException(status_code=429, detail="此会话已达消息上限，请新建会话")
     try:
         reply = await ask_agent(text, session_id)
     except AgentError:

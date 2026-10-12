@@ -1,4 +1,4 @@
-"""Lesson 5: local-only administrator browser sessions.
+"""Knowledge administration: local-only administrator browser sessions.
 
 This is NOT enterprise user identity: no SSO/MFA/roles/tenant separation.
 Browser never stores the ADMIN_API_KEY. The cookie is HttpOnly, SameSite Strict.

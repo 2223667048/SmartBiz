@@ -7,13 +7,13 @@ python-multipart>=0.0.9,<1
 pypdf>=5,<7
 python-docx>=1.1,<2
 
-# Lesson 6: Argon2id password hashing
+# Tenant platform: Argon2id password hashing
 argon2-cffi>=23.1,<27
 
-# Lesson 7: opt-in PostgreSQL tenant backend
+# PostgreSQL tenancy: opt-in PostgreSQL tenant backend
 psycopg[binary]>=3.2,<4
 sqlalchemy>=2.0,<3
 alembic>=1.13,<2
 
-# Lesson 9 observability
+# Operations observability
 prometheus-client>=0.20,<1

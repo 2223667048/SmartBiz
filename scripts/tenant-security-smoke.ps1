@@ -1,6 +1,6 @@
 param([string]$BaseUrl='http://127.0.0.1:8000')
 $ErrorActionPreference = 'Stop'
-Write-Host 'SmartBiz lesson 08: PostgreSQL /api/v2 smoke test (no secrets are printed)'
+Write-Host 'SmartBiz tenant security: PostgreSQL /api/v2 smoke test (no secrets are printed)'
 $email = Read-Host '管理员邮箱'
 $secure = Read-Host '管理员密码' -AsSecureString
 $password = [System.Net.NetworkCredential]::new('', $secure).Password

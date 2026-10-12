@@ -17,7 +17,7 @@ def test_gateway_budget_atomic_and_tenant_rls():
     # No cleanup for production data; run on dedicated disposable testing DB only.
     with store._tx() as conn:
         conn.execute('INSERT INTO organizations(id,name) VALUES(%s,%s),(%s,%s)',
-                     (a['organization_id'],'Lesson 10 test A',b['organization_id'],'Lesson 10 test B'))
+                     (a['organization_id'],'Gateway test A',b['organization_id'],'Gateway test B'))
     today=datetime.now(timezone.utc).date()
     price={'input':Decimal('0.4'),'output':Decimal('1.6'),'cached':Decimal('0.1')}
     aid=ledger.reserve(a,str(uuid.uuid4()),'test',today,100,70,price)

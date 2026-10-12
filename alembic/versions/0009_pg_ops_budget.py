@@ -1,4 +1,4 @@
-"""Lesson 9: per-tenant conservative cloud-cost reservation & worker heartbeat.
+"""Operations: per-tenant conservative cloud-cost reservation & worker heartbeat.
 
 Revision ID: 0009_pg_budget
 Revises: 0008_pg_ops

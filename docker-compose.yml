@@ -34,7 +34,7 @@ services:
       LANGFLOW_CONFIG_DIR: /app/langflow
       LANGFLOW_SAVE_DB_IN_CONFIG_DIR: "true"
       LANGFLOW_DATABASE_URL: sqlite:////app/langflow/langflow.db
-      # Lesson 4: internal shared knowledge tool. Empty key means KB remains disabled.
+      # Knowledge retrieval: internal shared knowledge tool. Empty key means KB remains disabled.
       KB_SERVICE_KEY: ${KB_SERVICE_KEY:-}
       # SSRF
       LANGFLOW_SSRF_PROTECTION_ENABLED: "true"

@@ -104,7 +104,7 @@ def extract_sections(filename: str, raw: bytes) -> list[tuple[int | None, str]]:
             sections = [(None, clean_text("\n".join(blocks)))]
     except (UnicodeDecodeError, BadZipFile, PackageNotFoundError, XMLSyntaxError, PdfReadError, PdfStreamError, ValueError, KeyError, OSError) as exc:
         raise KbInputError("文档无法解析，请检查编码或文件格式") from exc
-    # Reject scanned PDFs if no embedded text. We do NOT run OCR in this lesson.
+    # Reject scanned PDFs if no embedded text. This service does not run OCR.
     sections = [(page, text) for page, text in sections if text]
     if not sections:
         raise KbInputError("未提取到文本；扫描版 PDF 需要另行添加 OCR")
@@ -157,13 +157,13 @@ def store_document(filename: str, raw: bytes, embedding_spec: str, chunks: list[
     try:
         with db.connection() as conn:
             if conn.execute("SELECT COUNT(*) AS n FROM kb_documents").fetchone()["n"] >= MAX_DOCUMENTS:
-                raise KbConflictError("知识库演示版最多 50 个文档")
+                raise KbConflictError("当前知识库最多 50 个文档")
             existing = conn.execute("SELECT embedding_spec FROM kb_documents LIMIT 1").fetchone()
             if existing and existing["embedding_spec"] != embedding_spec:
                 raise KbConflictError("当前嵌入模型和已入库文档不一致，请重建索引")
             total = conn.execute("SELECT COUNT(*) AS n FROM kb_chunks").fetchone()["n"]
             if total + len(chunks) > MAX_TOTAL_CHUNKS:
-                raise KbConflictError("知识库演示版最多 2000 个文本块")
+                raise KbConflictError("当前知识库最多 2000 个文本块")
             conn.execute(
                 "INSERT INTO kb_documents(id,filename,sha256,size_bytes,embedding_spec,chunk_count) VALUES(?,?,?,?,?,?)",
                 (document_id, name, digest, len(raw), embedding_spec, len(chunks)),

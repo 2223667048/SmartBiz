@@ -1,4 +1,4 @@
--- Lesson 6. Separate namespace from legacy kb_*. No automatic cross-tenant import.
+-- Tenant platform. Separate namespace from legacy kb_*. No automatic cross-tenant import.
 CREATE TABLE IF NOT EXISTS organizations (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

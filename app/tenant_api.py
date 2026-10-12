@@ -16,7 +16,7 @@ from .langflow import ask_agent, AgentError
 from .settings import agent_mode
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix='/api/v2', tags=['Lesson 6 tenants'])
+router = APIRouter(prefix='/api/v2', tags=['Tenant platform tenants'])
 
 
 class LoginIn(BaseModel):

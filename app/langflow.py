@@ -31,8 +31,8 @@ async def ask_agent(text: str, session_id: str) -> str:
     mode = agent_mode()
     if mode == "mock":
         if any(word in text for word in ("价格", "报价", "费用")):
-            return "演示模式：具体报价需要了解业务需求。你可以点击下方‘留下咨询需求’提交联系方式。"
-        return f"演示模式：我收到了你的问题：{text}。配置 Langflow 工作流后，这里将返回真实 AI 回答。"
+            return "本地回退模式：具体报价需要了解业务需求。你可以点击下方‘留下咨询需求’提交联系方式。"
+        return f"本地回退模式：我收到了你的问题：{text}。配置 Langflow 工作流后，这里将返回模型回答。"
     if mode != "langflow":
         raise AgentError("Unsupported AGENT_MODE")
 

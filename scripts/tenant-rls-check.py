@@ -1,6 +1,6 @@
 """Non-destructive PG RLS inspection; requires two existing org IDs.
 
-RUN: python scripts/lesson07_rls_check.py ORG_A_ID ORG_B_ID
+RUN: python scripts/tenant-rls-check.py ORG_A_ID ORG_B_ID
 Only use smartbiz_app DSN. No secrets printed.
 """
 import sys
@@ -25,5 +25,5 @@ def check(a,b):
     print('PASS: 无上下文默认拒绝；A/B 查询相互隔离；运行账号不绕过 RLS')
 
 if __name__=='__main__':
-    if len(sys.argv)!=3:raise SystemExit('Usage: python scripts/lesson07_rls_check.py ORG_A_ID ORG_B_ID')
+    if len(sys.argv)!=3:raise SystemExit('Usage: python scripts/tenant-rls-check.py ORG_A_ID ORG_B_ID')
     check(sys.argv[1],sys.argv[2])

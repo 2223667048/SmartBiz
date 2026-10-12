@@ -10,13 +10,13 @@
 <body>
   <header class="topbar">
     <div class="brand"><span class="brand-mark" aria-hidden="true">S</span>
-      <div><strong>SmartBiz</strong><small>Knowledge Studio / 教学版</small></div></div>
+      <div><strong>SmartBiz</strong><small>Knowledge Studio / 本地部署版</small></div></div>
     <nav><a href="/">返回客服</a><a href="/docs" target="_blank" rel="noopener">API 文档</a><button type="button" id="logout" class="ghost hidden">退出登录</button></nav>
   </header>
   <main class="shell">
     <section id="login-panel" class="login-card">
       <span class="eyebrow">SECURE ACCESS</span><h1>知识库管理后台</h1>
-      <p>使用 <code>ADMIN_API_KEY</code> 登录，系统将创建 8 小时的 HttpOnly 管理会话。仅供本机教学，不代表企业级账号体系。</p>
+      <p>使用 <code>ADMIN_API_KEY</code> 登录，系统将创建 8 小时的 HttpOnly 管理会话。仅供本机管理，不代表企业级账号体系。</p>
       <form id="login-form">
         <label for="password">管理员密钥</label>
         <input id="password" type="password" autocomplete="off" required maxlength="512" placeholder="输入 .env 中的 ADMIN_API_KEY">
@@ -26,7 +26,7 @@
     </section>
 
     <section id="dashboard" class="hidden" aria-label="知识库管理工作台">
-      <div class="hero"><div><span class="eyebrow">KNOWLEDGE OPERATIONS</span><h1>企业知识库</h1><p>管理文档索引，验证检索质量，并检查 AI 回答的来源证据。</p></div><div class="hero-tag">Local MVP · v0.5</div></div>
+      <div class="hero"><div><span class="eyebrow">KNOWLEDGE OPERATIONS</span><h1>企业知识库</h1><p>管理文档索引，验证检索质量，并检查 AI 回答的来源证据。</p></div><div class="hero-tag">Local Deployment · v0.5</div></div>
       <div class="metrics" aria-label="索引统计">
         <div class="metric"><span>文档总数</span><strong id="doc-count">—</strong></div>
         <div class="metric"><span>文本块总数</span><strong id="chunk-count">—</strong></div>
@@ -71,7 +71,7 @@
           </section>
         </div>
       </div>
-      <footer>当前是单管理员、共享知识库的本地教学项目。不要上传客户机密资料或直接暴露到公网。</footer>
+      <footer>当前为单管理员、共享知识库部署。接入客户资料前请完成权限、密钥和公网安全配置。</footer>
     </section>
   </main>
 </body>

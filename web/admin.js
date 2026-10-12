@@ -164,7 +164,7 @@ byId('probe').addEventListener('click', async event => {
     const result = await api('/api/admin/kb/embedding-test', {
       method: 'POST', data: {text: '测试企业知识库语义向量服务是否可用'}
     });
-    setText('reindex-status', `连接正常：${result.cloud_mode ? '云端模型' : '演示算法'}；维度 ${result.dimension}；索引未修改。`);
+    setText('reindex-status', `连接正常：${result.cloud_mode ? '云端模型' : '本地回退算法'}；维度 ${result.dimension}；索引未修改。`);
   } catch (e) { setText('reindex-status', `连接失败：${e.message}`); }
   finally { button.disabled = false; }
 });

@@ -1,4 +1,4 @@
-# Optional Lesson 9 observability and TLS. Use *after* docker-compose.pg.yml.
+# Optional Operations observability and TLS. Use *after* docker-compose.pg.yml.
 # TLS: no public IP/domain required for localhost demo (local CA warning expected).
 services:
   smartbiz:

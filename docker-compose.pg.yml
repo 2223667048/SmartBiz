@@ -46,7 +46,7 @@ services:
   pgtest:
     profiles: ["pgtest"]
     build: .
-    command: ["python", "-m", "pytest", "-q", "tests/test_lesson07_pg_live.py", "tests/test_lesson08_pg_live.py", "tests/test_lesson09_pg_live.py"]
+    command: ["python", "-m", "pytest", "-q", "tests/test_tenant_pg_live.py", "tests/test_tenant_security_pg_live.py", "tests/test_operations_pg_live.py"]
     environment:
       RUN_PG_LIVE_TESTS: "1"
       PG_APP_DSN: postgresql://smartbiz_app:${PG_APP_PASSWORD}@postgres:5432/smartbiz

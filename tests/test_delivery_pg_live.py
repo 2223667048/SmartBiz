@@ -3,7 +3,7 @@ import os
 import uuid
 import pytest
 pytestmark=pytest.mark.skipif(
-    os.getenv('RUN_PG_LIVE_TESTS')!='1' or os.getenv('SMARTBIZ_TEST_CLUSTER')!='lesson11',
+    os.getenv('RUN_PG_LIVE_TESTS')!='1' or os.getenv('SMARTBIZ_TEST_CLUSTER')!='commercial',
     reason='requires disposable pgtest11 test cluster')
 
 

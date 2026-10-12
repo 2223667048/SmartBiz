@@ -1,4 +1,4 @@
--- Lesson 8: persistent, tenant-wide request rate counters. Not a production API gateway replacement.
+-- Tenant security: persistent, tenant-wide request rate counters. Not a production API gateway replacement.
 CREATE TABLE IF NOT EXISTS tenant_rate_limits (
   organization_id TEXT NOT NULL REFERENCES organizations(id),
   scope TEXT NOT NULL CHECK(scope IN ('ask','search','upload')),

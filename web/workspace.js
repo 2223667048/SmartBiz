@@ -1,5 +1,5 @@
 'use strict';
-// Lesson 7: never reuse UI data across users or tenants, including late HTTP responses.
+// PostgreSQL tenancy: never reuse UI data across users or tenants, including late HTTP responses.
 let token = '';
 let actor = null;
 let authEpoch = 0;
@@ -176,7 +176,7 @@ el('user-form').addEventListener('submit',async ev=>{
 window.addEventListener('pageshow', ev=>{if(ev.persisted)resetIdentity();});
 resetIdentity();
 
-// Lesson 10: direct provider-metered LLM call, separate from Langflow Agent.
+// Gateway: direct provider-metered LLM call, separate from Langflow Agent.
 el('gateway-form').addEventListener('submit',async ev=>{
   ev.preventDefault();const epoch=authEpoch;guard(epoch);
   say('gateway-status','模型请求中...');
@@ -204,7 +204,7 @@ el('gateway-report-refresh').addEventListener('click',async()=>{
   }catch(e){if(epoch===authEpoch&&!isAbort(e))say('gateway-report',e.message)}
 });
 
-// Lesson 11: clear on identity switches and guard every async response.
+// Commercial: clear on identity switches and guard every async response.
 async function loadCommercial(epoch=authEpoch){
   guard(epoch);
   const [plan, routes] = await Promise.all([
@@ -238,7 +238,7 @@ el('commercial-billing-refresh').addEventListener('click',async()=>{
     item(el('commercial-draft'),`${report.period} · 未核对计费草稿`,
       `固定费 $${(report.subscription_fee_micro_usd/1e6).toFixed(2)} · `+
       `网关内部用量估算 $${(report.gateway_internal_cost_micro_usd/1e6).toFixed(6)} · `+
-      `演示合计 $${(report.illustrative_total_micro_usd/1e6).toFixed(6)} · 不可直接收费`);
+      `参考合计 $${(report.illustrative_total_micro_usd/1e6).toFixed(6)} · 不可直接作为账单`);
     for(const row of recon.rows){
       item(el('commercial-recon'),`${row.status}：${row.n} 条`,
         `供应商导入值差额 ${row.delta} micro USD；未匹配项不自动归属企业`);

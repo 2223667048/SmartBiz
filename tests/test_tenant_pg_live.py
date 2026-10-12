@@ -1,6 +1,6 @@
 """Live PostgreSQL RLS and pgvector tests. Explicit opt-in on a disposable dev database.
 
-RUN_PG_LIVE_TESTS=1 PG_APP_DSN=... PG_WORKER_DSN=... pytest -q tests/test_lesson07_pg_live.py
+RUN_PG_LIVE_TESTS=1 PG_APP_DSN=... PG_WORKER_DSN=... pytest -q tests/test_tenant_pg_live.py
 Do NOT point at production: creates orgs, documents and events.
 """
 import os

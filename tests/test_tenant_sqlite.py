@@ -1,4 +1,4 @@
-"""Lesson 6: live API, tenant IDOR regression, durable queue, no legacy bypass."""
+"""Tenant platform: live API, tenant IDOR regression, durable queue, no legacy bypass."""
 from pathlib import Path
 import sqlite3
 import time

@@ -1,4 +1,4 @@
-"""One-way, operator-controlled SQLite lesson-6 -> PostgreSQL v7 migration.
+"""One-way, operator-controlled SQLite tenant store -> PostgreSQL migration.
 
 Required: stop smartbiz/worker while importing, keep the original SQLite DB unchanged,
 use same /data upload volume; auth sessions intentionally NOT copied. Run --dry-run first.
@@ -78,7 +78,7 @@ def run(dry_run):
                     VALUES(%s,%s,%s,%s,%s,%s,NULL,NULL,%s)''',
                     (j['id'],j['organization_id'],j['document_id'],state,j['attempts'],j['max_attempts'],j['error_message']))
             pg._audit(conn,org_id,None,'migration.import','organization',org_id,
-                      details={'source':'sqlite_lesson6','documents':sum(d['organization_id']==org_id for d in records['organization_documents'])})
+                      details={'source':'sqlite_tenant_store','documents':sum(d['organization_id']==org_id for d in records['organization_documents'])})
     print('PostgreSQL 数据导入提交成功；旧 SQLite、旧令牌未修改。')
     return counts
 

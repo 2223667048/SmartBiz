@@ -7,7 +7,7 @@ from app import embeddings, kb
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
-    monkeypatch.setenv("SMARTBIZ_DB_PATH", str(tmp_path / "lesson5.sqlite3"))
+    monkeypatch.setenv("SMARTBIZ_DB_PATH", str(tmp_path / "knowledge-admin.sqlite3"))
     monkeypatch.setenv("ADMIN_API_KEY", "strong-test-admin-password-never-use")
     monkeypatch.setenv("KB_SERVICE_KEY", "strong-test-service-password-never-use")
     monkeypatch.setenv("RAG_EMBEDDING_MODE", "demo")

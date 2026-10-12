@@ -1,4 +1,4 @@
-"""Lesson 4: RAG persistence, access, upload limits and grounded citation contract."""
+"""Knowledge retrieval: RAG persistence, access, upload limits and grounded citation contract."""
 from io import BytesIO
 
 import pytest
@@ -14,8 +14,8 @@ from app import embeddings, kb
 @pytest.fixture
 def client(tmp_path, monkeypatch):
     monkeypatch.setenv("SMARTBIZ_DB_PATH", str(tmp_path / "kb.sqlite3"))
-    monkeypatch.setenv("ADMIN_API_KEY", "lesson4-admin-secret")
-    monkeypatch.setenv("KB_SERVICE_KEY", "lesson4-service-secret")
+    monkeypatch.setenv("ADMIN_API_KEY", "knowledge-admin-secret")
+    monkeypatch.setenv("KB_SERVICE_KEY", "knowledge-service-secret")
     monkeypatch.setenv("RAG_EMBEDDING_MODE", "demo")
     monkeypatch.setenv("RAG_MIN_SIMILARITY", "0.25")
     monkeypatch.setenv("AGENT_MODE", "mock")
@@ -23,8 +23,8 @@ def client(tmp_path, monkeypatch):
         yield c
 
 
-ADMIN = {"X-Admin-Key": "lesson4-admin-secret"}
-SERVICE = {"X-KB-Service-Key": "lesson4-service-secret"}
+ADMIN = {"X-Admin-Key": "knowledge-admin-secret"}
+SERVICE = {"X-KB-Service-Key": "knowledge-service-secret"}
 CONTENT = "售后政策：工作日在线客服时间为09:00至18:00。" * 11
 
 
@@ -126,7 +126,7 @@ def test_kb_ask_requires_credentials_and_reports_real_sources(client, monkeypatc
 
     async def fake_llm(prompt, session_id):
         seen["prompt"], seen["session_id"] = prompt, session_id
-        return "根据教学售后规定，工作日在线客服时间是 09:00 至 18:00。[1]"
+        return "根据售后服务规定，工作日在线客服时间是 09:00 至 18:00。[1]"
 
     monkeypatch.setattr("app.main.ask_agent", fake_llm)
     result = client.post("/api/kb/ask", headers=headers, json=request)

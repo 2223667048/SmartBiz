@@ -33,7 +33,7 @@ def _load_with_fake_lfx(monkeypatch):
         monkeypatch.setitem(sys.modules, name, module)
 
     toolpath = Path(__file__).resolve().parent.parent / "extensions" / "smartbiz_catalog_tool.py"
-    spec = importlib.util.spec_from_file_location("smartbiz_lesson3_test_tool", toolpath)
+    spec = importlib.util.spec_from_file_location("smartbiz_integration_test_tool", toolpath)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -52,7 +52,7 @@ def test_custom_tool_calls_fixed_internal_endpoint(monkeypatch):
 
         def read(self, length):
             assert length <= 32768
-            return json.dumps({"demo_only": True, "count": 1, "items": []}).encode()
+            return json.dumps({"reference_only": True, "count": 1, "items": []}).encode()
 
     def fake_urlopen(req, timeout):
         assert timeout == 5
@@ -63,7 +63,7 @@ def test_custom_tool_calls_fixed_internal_endpoint(monkeypatch):
     tool = module.SmartBizCatalogTool()
     tool.query = "知识库"
     result = tool.search_services()
-    assert result.data["demo_only"] is True
+    assert result.data["reference_only"] is True
     assert urlsplit(seen[0]).netloc == "smartbiz:8000"
     assert urlsplit(seen[0]).path == "/api/catalog/search"
     assert parse_qs(urlsplit(seen[0]).query) == {"q": ["知识库"]}

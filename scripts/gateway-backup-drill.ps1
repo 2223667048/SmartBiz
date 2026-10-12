@@ -11,9 +11,9 @@ $drillDb = 'smartbiz_restore_drill'
 # Stop writes for a clean application-level drill. pg_dump itself gives a consistent DB snapshot,
 # but database dumps do not contain /data/tenant-uploads or Langflow volumes.
 Write-Host '1) Backing up database...'
-& docker compose @dc exec -T postgres pg_dump -U smartbiz_owner -d smartbiz -Fc -f /tmp/lesson10-drill.dump
+& docker compose @dc exec -T postgres pg_dump -U smartbiz_owner -d smartbiz -Fc -f /tmp/gateway-drill.dump
 if ($LASTEXITCODE -ne 0) { throw 'pg_dump failed' }
-& docker compose @dc cp 'postgres:/tmp/lesson10-drill.dump' $hostPath
+& docker compose @dc cp 'postgres:/tmp/gateway-drill.dump' $hostPath
 if ($LASTEXITCODE -ne 0) { throw 'copy failed' }
 if ((Get-Item $hostPath).Length -lt 1000) { throw 'dump unexpectedly small' }
 Write-Host "Backup saved: $hostPath"
@@ -23,7 +23,7 @@ if ($LASTEXITCODE -ne 0 -or $exists -eq '1') { throw 'Drill database exists or c
 Write-Host '3) Creating and restoring into isolated DB (not production DB)...'
 & docker compose @dc exec -T postgres createdb -U smartbiz_owner $drillDb
 if ($LASTEXITCODE -ne 0) { throw 'createdb failed' }
-& docker compose @dc exec -T postgres pg_restore --exit-on-error --no-owner -U smartbiz_owner -d $drillDb /tmp/lesson10-drill.dump
+& docker compose @dc exec -T postgres pg_restore --exit-on-error --no-owner -U smartbiz_owner -d $drillDb /tmp/gateway-drill.dump
 if ($LASTEXITCODE -ne 0) { throw 'restore failed. Inspect the drill database; original is intact.' }
 Write-Host '4) Verify restored schema and tenant counts...'
 & docker compose @dc exec -T postgres psql -U smartbiz_owner -d $drillDb -c 'SELECT version_num FROM alembic_version; SELECT COUNT(*) AS organizations FROM organizations; SELECT COUNT(*) AS documents FROM organization_documents; SELECT COUNT(*) AS usage_rows FROM model_gateway_daily;'

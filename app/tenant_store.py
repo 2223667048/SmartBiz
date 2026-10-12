@@ -1,4 +1,4 @@
-"""Lesson 6: auditable tenant-scoped DB operations and durable SQLite work queue."""
+"""Tenant platform: auditable tenant-scoped DB operations and durable SQLite work queue."""
 from array import array
 import hashlib
 import secrets
@@ -376,7 +376,7 @@ def list_audit(org_id, limit=50):
     raise RuntimeError('企业审计日志只在 PostgreSQL 后端实现')
 
 
-# Lesson 8: all tenant security checks are enforced by the server, not UI controls.
+# Tenant security: all tenant security checks are enforced by the server, not UI controls.
 def disable_user(organization_id: str, user_id: str, actor_id: str) -> bool:
     if user_id == actor_id:
         raise ValueError('不能停用当前管理员账号')

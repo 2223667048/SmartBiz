@@ -361,7 +361,7 @@ def search(organization_id,role,vector,spec,limit=3,min_score=0.25):
     return matches
 
 
-# Lesson 8: revoke user and all outstanding tokens within one transaction.
+# Tenant security: revoke user and all outstanding tokens within one transaction.
 def disable_user(organization_id: str, user_id: str, actor_id: str) -> bool:
     if user_id == actor_id:
         raise ValueError('不能停用当前管理员账号')

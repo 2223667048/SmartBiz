@@ -1,4 +1,4 @@
-"""Lesson 8: tenant-bounded rate limits, PG RLS.
+"""Tenant security: tenant-bounded rate limits, PG RLS.
 
 Revision ID: 0008_pg_ops
 Revises: 0007_pg_tenant
@@ -23,7 +23,7 @@ def upgrade():
       USING(organization_id=nullif(current_setting('app.tenant_id',true),''))
       WITH CHECK(organization_id=nullif(current_setting('app.tenant_id',true),''))""")
     op.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON tenant_rate_limits TO smartbiz_app')
-    # Lesson 7 had table privileges for smartbiz_worker but no RLS policies.
+    # PostgreSQL tenancy had table privileges for smartbiz_worker but no RLS policies.
     # The worker is a trusted backend process that must pick jobs from all tenants.
     # Keep its credential OUT of the web container; it has cross-tenant data rights.
     for tab in ('organization_documents','organization_chunks','indexing_jobs'):

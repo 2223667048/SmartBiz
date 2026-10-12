@@ -1,5 +1,5 @@
 """Portable test suite: frontend no cross-user stale render; PostgreSQL migration source contracts.
-A running PostgreSQL database is tested separately by test_lesson07_pg_live.py.
+A running PostgreSQL database is tested separately by test_tenant_pg_live.py.
 """
 from pathlib import Path
 import shutil
@@ -11,8 +11,8 @@ ROOT=Path(__file__).resolve().parents[1]
 
 def test_frontend_cross_account_logout_and_late_reply():
     node=shutil.which('node')
-    if not node:pytest.skip('Node.js is unavailable; manually run tests/lesson07_frontend_test.cjs')
-    run=subprocess.run([node,str(ROOT/'tests/lesson07_frontend_test.cjs')],cwd=ROOT,text=True,capture_output=True,timeout=15)
+    if not node:pytest.skip('Node.js is unavailable; manually run tests/workspace_frontend_test.cjs')
+    run=subprocess.run([node,str(ROOT/'tests/workspace_frontend_test.cjs')],cwd=ROOT,text=True,capture_output=True,timeout=15)
     assert run.returncode==0,run.stderr
     assert 'PASS' in run.stdout
 
@@ -77,7 +77,7 @@ def test_rag_uses_fresh_llm_session_for_every_request(tmp_path, monkeypatch):
         headers={'Authorization':'Bearer '+login['access_token']}
         response=client.post('/api/v2/documents',headers=headers,files={'file':('support.md','每周一到周五客服时间09:00到18:00。'.encode())})
         assert response.status_code==202
-        assert tenant_worker.process_one('unit-lesson07')
+        assert tenant_worker.process_one('unit-tenant_pg')
         sessions=[]
         async def agent(prompt,session_id):
             sessions.append(session_id)

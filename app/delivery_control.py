@@ -1,4 +1,4 @@
-"""Lesson 12: conservative delivery gates, not an invoice/payment implementation.
+"""Delivery: conservative delivery gates, not an invoice/payment implementation.
 
 These functions intentionally cannot declare Langflow-wide coverage based only on
 metered proxy calls. The flow inventory is a human-audited input, not discovery.
